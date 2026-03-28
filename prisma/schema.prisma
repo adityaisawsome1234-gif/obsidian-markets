@@ -1,0 +1,273 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  image         String?
+  provider      String?
+  providerId    String?
+  investorType  InvestorType @default(CASUAL)
+  experience    ExperienceLevel @default(BEGINNER)
+  timezone      String    @default("America/New_York")
+  plan          Plan      @default(FREE)
+  stripeId      String?   @unique
+  planExpiresAt DateTime?
+  watchlists    Watchlist[]
+  portfolios    Portfolio[]
+  alerts        Alert[]
+  aiChats       AiChatSession[]
+  savedScreens  SavedScreen[]
+  preferences   UserPreferences?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+enum InvestorType {
+  DAY_TRADER
+  SWING_TRADER
+  OPTIONS_TRADER
+  LONG_TERM
+  CASUAL
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PROFESSIONAL
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ELITE
+}
+
+model UserPreferences {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id])
+  defaultChartType   String   @default("candle")
+  defaultTimeframe   String   @default("1D")
+  dashboardLayout    Json?
+  favoriteIndicators String[] @default([])
+  newsCategories     String[] @default([])
+  notifyEmail        Boolean  @default(true)
+  notifyPush         Boolean  @default(true)
+  notifySms          Boolean  @default(false)
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  tickers   String[]
+  isDefault Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Portfolio {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id])
+  name        String
+  isConnected Boolean             @default(false)
+  plaidItemId String?
+  holdings    Holding[]
+  snapshots   PortfolioSnapshot[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([userId])
+}
+
+model Holding {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  ticker      String
+  shares      Float
+  avgCost     Float
+  assetType   AssetType @default(STOCK)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([portfolioId])
+  @@index([ticker])
+}
+
+enum AssetType {
+  STOCK
+  ETF
+  OPTION
+  CRYPTO
+  BOND
+  CASH
+}
+
+model PortfolioSnapshot {
+  id           String   @id @default(cuid())
+  portfolioId  String
+  portfolio    Portfolio @relation(fields: [portfolioId], references: [id])
+  totalValue   Float
+  dayChange    Float
+  dayChangePct Float
+  snapshotDate DateTime
+
+  @@index([portfolioId, snapshotDate])
+}
+
+model Alert {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  ticker        String?
+  alertType     AlertType
+  condition     Json
+  isActive      Boolean   @default(true)
+  lastTriggered DateTime?
+  channels      String[]  @default(["in_app"])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId, isActive])
+  @@index([ticker])
+}
+
+enum AlertType {
+  PRICE_ABOVE
+  PRICE_BELOW
+  PRICE_CHANGE_PCT
+  VOLUME_SPIKE
+  OPTIONS_FLOW
+  EARNINGS_DATE
+  SEC_FILING
+  CUSTOM_SCREEN
+}
+
+model AiChatSession {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  title     String?
+  messages  AiMessage[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model AiMessage {
+  id        String        @id @default(cuid())
+  sessionId String
+  session   AiChatSession @relation(fields: [sessionId], references: [id])
+  role      String
+  content   String
+  model     String?
+  tokens    Int?
+  createdAt DateTime      @default(now())
+
+  @@index([sessionId])
+}
+
+model SavedScreen {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  type      String
+  filters   Json
+  sortBy    String?
+  sortDir   String?  @default("desc")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ─── SEC Filing Proprietary Data Pipeline ───
+
+model SecFilingExtract {
+  id                 Int      @id @default(autoincrement())
+  accessionNumber    String   @unique @map("accession_number")
+  filingType         String   @map("filing_type")
+  company            String
+  ticker             String
+  cik                String?
+  filedDate          DateTime @map("filed_date") @db.Date
+  filingUrl          String?  @map("filing_url")
+  documentUrl        String?  @map("document_url")
+  rawTextHash        String?  @map("raw_text_hash")
+  rawTextLength      Int      @default(0) @map("raw_text_length")
+
+  // Structured extraction (JSON)
+  materialEvents     Json     @default("[]") @map("material_events")
+  financialMetrics   Json     @default("[]") @map("financial_metrics")
+  insiderTransactions Json    @default("[]") @map("insider_transactions")
+  riskFactorsNew     Json     @default("[]") @map("risk_factors_new")
+  keyQuotes          Json     @default("[]") @map("key_quotes")
+
+  // Extraction metadata
+  extractionModel    String?  @map("extraction_model")
+  extractionTokens   Int      @default(0) @map("extraction_tokens")
+  extractionCostCents Float   @default(0) @map("extraction_cost_cents")
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([ticker])
+  @@index([filedDate(sort: Desc)])
+  @@index([ticker, filingType])
+  @@index([filingType, filedDate(sort: Desc)])
+  @@map("sec_filing_extracts")
+}
+
+model SecFilingChange {
+  id                 Int      @id @default(autoincrement())
+  ticker             String
+  changeType         String   @map("change_type")
+  description        String
+  severity           String
+  currentFilingDate  DateTime @map("current_filing_date") @db.Date
+  priorFilingDate    DateTime @map("prior_filing_date") @db.Date
+  currentAccession   String   @map("current_accession")
+  priorAccession     String   @map("prior_accession")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([ticker])
+  @@index([currentFilingDate(sort: Desc)])
+  @@index([severity, currentFilingDate(sort: Desc)])
+  @@map("sec_filing_changes")
+}
+
+model SecIngestionLog {
+  id              Int       @id @default(autoincrement())
+  runStartedAt    DateTime  @map("run_started_at")
+  runFinishedAt   DateTime? @map("run_finished_at")
+  filingsFound    Int       @default(0) @map("filings_found")
+  filingsNew      Int       @default(0) @map("filings_new")
+  filingsAnalyzed Int       @default(0) @map("filings_analyzed")
+  changesDetected Int       @default(0) @map("changes_detected")
+  totalCostCents  Float     @default(0) @map("total_cost_cents")
+  status          String    @default("running")
+  errorMessage    String?   @map("error_message")
+
+  @@map("sec_ingestion_log")
+}

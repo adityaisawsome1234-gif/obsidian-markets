@@ -1,26 +1,260 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Hide scrollbar for testimonials */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Infinite marquee */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ─── Surfaces (layered dark, NOT pure black) ─── */
+  --color-bg: #0b0b0f;
+  --color-s1: #101014;
+  --color-s2: #16161b;
+  --color-s3: #1c1c22;
+  --color-s4: #232329;
+  --color-s5: #2a2a31;
+
+  /* ─── Text hierarchy ─── */
+  --color-w: #ececef;
+  --color-w2: #b0b0b8;
+  --color-w3: #76767f;
+  --color-w4: #55555d;
+  --color-w5: #3b3b42;
+  --color-w6: #2a2a30;
+
+  /* ─── Semantic ─── */
+  --color-g: #22c55e;
+  --color-r: #ef4444;
+  --color-y: #eab308;
+  --color-blue: #60a5fa;
+
+  /* ─── Brand accent (AI only) ─── */
+  --color-a: #a78bfa;
+  --color-a2: #8b5cf6;
+
+  /* ─── Radii ─── */
+  --radius-panel: 10px;
+  --radius-sm: 6px;
+
+  /* ─── Fonts ─── */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* ─── Surfaces ─── */
+  --bg: #0b0b0f;
+  --s1: #101014;
+  --s2: #16161b;
+  --s3: #1c1c22;
+  --s4: #232329;
+  --s5: #2a2a31;
+
+  /* ─── Text ─── */
+  --w: #ececef;
+  --w2: #b0b0b8;
+  --w3: #76767f;
+  --w4: #55555d;
+  --w5: #3b3b42;
+  --w6: #2a2a30;
+
+  /* ─── Semantic ─── */
+  --g: #22c55e;
+  --gbg: rgba(34, 197, 94, 0.08);
+  --gbr: rgba(34, 197, 94, 0.18);
+  --r: #ef4444;
+  --rbg: rgba(239, 68, 68, 0.08);
+  --rbr: rgba(239, 68, 68, 0.18);
+
+  /* ─── Brand accent (AI only) ─── */
+  --a: #a78bfa;
+  --a2: #8b5cf6;
+  --abg: rgba(167, 139, 250, 0.08);
+  --abr: rgba(167, 139, 250, 0.15);
+
+  /* ─── Supporting ─── */
+  --y: #eab308;
+  --ybg: rgba(234, 179, 8, 0.08);
+  --blue: #60a5fa;
+
+  /* ─── Borders ─── */
+  --brd: rgba(255, 255, 255, 0.05);
+  --brd2: rgba(255, 255, 255, 0.08);
+  --brd3: rgba(255, 255, 255, 0.12);
+
+  /* ─── Radii ─── */
+  --rad: 8px;
+  --rad-sm: 5px;
+
+  /* ─── Typography ─── */
+  --f: 'Inter', system-ui, -apple-system, sans-serif;
+  --m: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ─── Base ─── */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--w2);
+  font-family: var(--f);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* Landing page needs scrolling (body overflow:hidden is for the app shell) */
+html:has(.landing-page) {
+  scroll-behavior: smooth;
+}
+body:has(.landing-page) {
+  overflow: auto !important;
+  overflow-x: hidden !important;
+  background: #0b0b0f;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--s5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--w5);
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(167, 139, 250, 0.25);
+  color: var(--w);
+}
+
+/* ─── Monospace numbers ─── */
+.mono {
+  font-family: var(--m);
+}
+
+/* ─── Panel base ─── */
+.panel {
+  background: var(--s1);
+  border: 1px solid var(--brd);
+  border-radius: var(--rad);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--brd);
+  gap: 6px;
+}
+
+.panel-label {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--w4);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ─── Shared-border grid ─── */
+.shared-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--brd);
+  border: 1px solid var(--brd);
+  border-radius: var(--rad);
+  overflow: hidden;
+}
+
+.shared-grid-cell {
+  background: var(--s1);
+  padding: 10px 12px;
+}
+
+/* ─── Live pulse ─── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.live-dot {
+  animation: pulse 2s ease infinite;
+}
+
+/* ─── Shimmer animation for skeletons ─── */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── AI glow accent ─── */
+.glow-ai {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15), 0 0 40px rgba(139, 92, 246, 0.05);
+}
+
+.glow-ai-border {
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+/* ─── Placeholder styling ─── */
+::placeholder {
+  color: var(--w4);
+  opacity: 1;
+}
+
+/* ─── Spotlight animation ─── */
+@keyframes spotlight {
+  0% { opacity: 0; transform: translate(-72%, -62%) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, -40%) scale(1); }
+}
+
+.animate-spotlight {
+  animation: spotlight 2s ease .75s 1 forwards;
+}
+
+/* ─── Glow effect ─── */
+.glow {
+  position: absolute;
+  inset: 0;
+}
+
+/* ─── Landing page body ─── */
+.landing-body {
+  overflow: auto;
 }

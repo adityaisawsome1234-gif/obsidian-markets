@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 360px;
+      min-height: 420px;
+      background: #0b0b0f;
+      color: #ececef;
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      font-size: 13px;
+      overflow-x: hidden;
+    }
+    .header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .logo { width: 24px; height: 24px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); border-radius: 6px; }
+    .brand { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+    .search-wrap {
+      padding: 12px 16px;
+    }
+    .search {
+      width: 100%; padding: 10px 12px; background: #16161b; border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; color: #ececef; font-size: 13px; outline: none; font-family: inherit;
+    }
+    .search:focus { border-color: rgba(167,139,250,0.4); }
+    .search::placeholder { color: #55555d; }
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #55555d; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 8px 16px 4px;
+    }
+    .watchlist { padding: 4px 12px; }
+    .wl-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      cursor: pointer; border-radius: 4px;
+    }
+    .wl-item:hover { background: rgba(255,255,255,0.03); }
+    .wl-ticker { font-size: 13px; font-weight: 600; }
+    .wl-name { font-size: 10px; color: #76767f; margin-top: 1px; }
+    .wl-price { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-align: right; }
+    .wl-change { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-align: right; }
+    .green { color: #22c55e; }
+    .red { color: #ef4444; }
+    .muted { color: #55555d; }
+    .analyze-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin: 12px 16px; padding: 10px; background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.2); border-radius: 8px;
+      color: #a78bfa; font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .analyze-btn:hover { background: rgba(167,139,250,0.18); border-color: rgba(167,139,250,0.35); }
+    .recent { padding: 4px 12px 12px; }
+    .recent-item {
+      padding: 6px 4px; font-size: 11px; color: #76767f; border-bottom: 1px solid rgba(255,255,255,0.03);
+      cursor: pointer;
+    }
+    .recent-item:hover { color: #b0b0b8; }
+    .recent-item strong { color: #ececef; font-weight: 600; margin-right: 6px; }
+    .settings-link {
+      display: block; text-align: center; padding: 10px; font-size: 10px; color: #3b3b42;
+      text-decoration: none; border-top: 1px solid rgba(255,255,255,0.03);
+    }
+    .settings-link:hover { color: #55555d; }
+    .loading { text-align: center; padding: 20px; color: #55555d; font-size: 11px; }
+    #result { padding: 12px 16px; display: none; }
+    #result .result-text { font-size: 12px; color: #b0b0b8; line-height: 1.65; }
+    #result .result-header { font-size: 10px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .back-btn { font-size: 10px; color: #55555d; cursor: pointer; margin-top: 8px; }
+    .back-btn:hover { color: #76767f; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo"></div>
+    <span class="brand">Obsidian Markets</span>
+  </div>
+
+  <div id="main-view">
+    <div class="search-wrap">
+      <input type="text" class="search" id="search" placeholder="Search any ticker..." autocomplete="off" spellcheck="false">
+    </div>
+
+    <button class="analyze-btn" id="analyze-page">
+      <span>✦</span> Analyze This Page
+    </button>
+
+    <div class="section-label">Watchlist</div>
+    <div class="watchlist" id="watchlist">
+      <div class="loading">Loading quotes...</div>
+    </div>
+
+    <div class="section-label" id="recent-label" style="display:none">Recent</div>
+    <div class="recent" id="recent"></div>
+  </div>
+
+  <div id="result" style="display:none">
+    <div class="result-header">✦ AI Analysis</div>
+    <div class="result-text" id="result-text"></div>
+    <div class="back-btn" id="back-btn">← Back</div>
+  </div>
+
+  <a class="settings-link" id="settings-link" href="#" target="_blank">Settings · API Key</a>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

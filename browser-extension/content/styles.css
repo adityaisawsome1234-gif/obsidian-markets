@@ -1,0 +1,165 @@
+/* Obsidian Markets — Injected Content Styles (scoped to avoid conflicts) */
+
+/* Ticker highlight — subtle purple underline on detected tickers */
+[data-obsidian-ticker] {
+  text-decoration: underline;
+  text-decoration-color: rgba(167, 139, 250, 0.4);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+  cursor: pointer;
+  transition: text-decoration-color 0.15s;
+}
+[data-obsidian-ticker]:hover {
+  text-decoration-color: rgba(167, 139, 250, 0.9);
+  background: rgba(167, 139, 250, 0.06);
+  border-radius: 2px;
+}
+
+/* Floating analysis panel */
+#obsidian-floating-panel {
+  position: fixed;
+  z-index: 2147483647;
+  width: 340px;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  color: #ececef;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+#obsidian-floating-panel.obsidian-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Panel header */
+.obsidian-fp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.obsidian-fp-ticker {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ececef;
+  letter-spacing: -0.3px;
+}
+.obsidian-fp-name {
+  font-size: 10px;
+  color: #76767f;
+  margin-top: 1px;
+}
+.obsidian-fp-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: right;
+}
+.obsidian-fp-change {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-align: right;
+  margin-top: 2px;
+}
+.obsidian-fp-green { color: #22c55e; }
+.obsidian-fp-red { color: #ef4444; }
+
+/* Sparkline */
+.obsidian-fp-sparkline {
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.obsidian-fp-sparkline svg {
+  width: 100%;
+  height: 40px;
+}
+
+/* AI analysis section */
+.obsidian-fp-ai {
+  padding: 12px 14px;
+}
+.obsidian-fp-ai-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+.obsidian-fp-ai-text {
+  font-size: 12px;
+  color: #b0b0b8;
+  line-height: 1.65;
+}
+.obsidian-fp-ai-loading {
+  font-size: 11px;
+  color: #55555d;
+  animation: obsidian-pulse 1.5s ease infinite;
+}
+
+/* Actions bar */
+.obsidian-fp-actions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.obsidian-fp-btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  text-decoration: none;
+  display: block;
+}
+.obsidian-fp-btn-primary {
+  background: #8b5cf6;
+  color: white;
+}
+.obsidian-fp-btn-primary:hover { background: #7c3aed; }
+.obsidian-fp-btn-ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: #b0b0b8;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.obsidian-fp-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ececef;
+}
+
+/* Branding */
+.obsidian-fp-brand {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px 8px;
+  font-size: 9px;
+  color: #3b3b42;
+}
+.obsidian-fp-logo {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  border-radius: 2px;
+}
+
+@keyframes obsidian-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}

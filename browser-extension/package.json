@@ -1,0 +1,14 @@
+{
+  "name": "obsidian-markets-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Obsidian Markets — AI stock analysis on any website",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  }
+}
