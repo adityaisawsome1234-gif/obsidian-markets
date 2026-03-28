@@ -604,12 +604,19 @@ export function estimateCostCents(
 ): number {
   // Per-token pricing in dollars
   const pricing: Record<string, { input: number; output: number }> = {
-    "claude-haiku-4-5-20251001": { input: 0.25 / 1_000_000, output: 1.25 / 1_000_000 },
-    "claude-sonnet-4-6": { input: 3 / 1_000_000, output: 15 / 1_000_000 },
-    "claude-opus-4-6": { input: 5 / 1_000_000, output: 25 / 1_000_000 },
+    haiku: { input: 0.25 / 1_000_000, output: 1.25 / 1_000_000 },
+    sonnet: { input: 3 / 1_000_000, output: 15 / 1_000_000 },
+    opus: { input: 5 / 1_000_000, output: 25 / 1_000_000 },
   };
 
-  const p = pricing[model] || pricing["claude-sonnet-4-6"];
+  // Normalize model string to tier name (e.g. "claude-opus-4-20250115" -> "opus")
+  const tier = model.includes("opus")
+    ? "opus"
+    : model.includes("haiku")
+      ? "haiku"
+      : "sonnet";
+
+  const p = pricing[tier];
   const costDollars = inputTokens * p.input + outputTokens * p.output;
   return Math.round(costDollars * 100 * 100) / 100; // cents, 2 decimal places
 }
