@@ -14,6 +14,7 @@ import {
   Bell,
   Settings,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -36,7 +37,10 @@ const allNavGroups: NavGroup[] = [
     { id: "options", label: "Options", icon: Layers, href: "/options" },
     { id: "macro", label: "Macro", icon: Globe, href: "/macro" },
   ],
-  [{ id: "portfolio", label: "Portfolio", icon: PieChart, href: "/portfolio" }],
+  [
+    { id: "portfolio", label: "Portfolio", icon: PieChart, href: "/portfolio" },
+    { id: "alpha", label: "Alpha", icon: Zap, href: "/alpha" },
+  ],
   [
     { id: "news", label: "News", icon: Newspaper, href: "/news" },
     { id: "alerts", label: "Alerts", icon: Bell, href: "/alerts" },

@@ -44,8 +44,11 @@ export const NAV_GROUPS = [
     { id: "options", label: "Options", icon: "Layers", href: "/options" },
     { id: "macro", label: "Macro", icon: "Globe", href: "/macro" },
   ],
-  // Portfolio
-  [{ id: "portfolio", label: "Portfolio", icon: "PieChart", href: "/portfolio" }],
+  // Portfolio & Alpha
+  [
+    { id: "portfolio", label: "Portfolio", icon: "PieChart", href: "/portfolio" },
+    { id: "alpha", label: "Alpha", icon: "Zap", href: "/alpha" },
+  ],
   // Intel & Alerts
   [
     { id: "news", label: "News", icon: "Newspaper", href: "/news" },

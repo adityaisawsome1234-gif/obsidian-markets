@@ -27,6 +27,11 @@ model User {
   aiChats       AiChatSession[]
   savedScreens  SavedScreen[]
   preferences   UserPreferences?
+  alphaTrades          AlphaTrade[]
+  alphaRecommendationRuns AlphaRecommendationRun[]
+  alphaPatternStats    AlphaPatternStats[]
+  alphaEdgeSnapshots   AlphaEdgeSnapshot[]
+  alphaWeeklyReports   AlphaWeeklyReport[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -270,4 +275,195 @@ model SecIngestionLog {
   errorMessage    String?   @map("error_message")
 
   @@map("sec_ingestion_log")
+}
+
+// ─── Personal Alpha Engine ───
+
+model AlphaTrade {
+  id                String   @id @default(cuid())
+  userId            String   @map("user_id")
+  user              User     @relation(fields: [userId], references: [id])
+  portfolioId       String?  @map("portfolio_id")
+  symbol            String
+  assetType         AssetType @default(STOCK) @map("asset_type")
+  side              String   // "long" | "short"
+  quantity          Float
+  entryPrice        Float    @map("entry_price")
+  exitPrice         Float?   @map("exit_price")
+  openedAt          DateTime @map("opened_at")
+  closedAt          DateTime? @map("closed_at")
+  holdingPeriodDays Int?     @map("holding_period_days")
+  pnlAbsolute       Float?   @map("pnl_absolute")
+  pnlPercent        Float?   @map("pnl_percent")
+  status            String   @default("open") // "open" | "closed"
+  strategyTag       String   @map("strategy_tag")
+  sector            String?
+  marketCapBucket   String?  @map("market_cap_bucket")
+  source            String   @default("manual") // "manual" | "imported" | "recommended"
+  recommendationId  String?  @map("recommendation_id")
+  notes             String?
+  tags              String[] @default([])
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([userId, strategyTag])
+  @@index([userId, sector])
+  @@index([userId, closedAt(sort: Desc)])
+  @@index([symbol])
+  @@map("alpha_trades")
+}
+
+model AlphaMarketSignal {
+  id              String   @id @default(cuid())
+  symbol          String
+  signalType      String   @map("signal_type")
+  signalTimestamp DateTime @map("signal_timestamp")
+  signalStrength  Float    @map("signal_strength")
+  rawPayload      Json     @default("{}") @map("raw_payload")
+  derivedTags     String[] @default([]) @map("derived_tags")
+  sector          String?
+  marketContext   String?  @map("market_context")
+  confidenceBase  Float    @default(0.5) @map("confidence_base")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([symbol, signalType])
+  @@index([signalTimestamp(sort: Desc)])
+  @@index([symbol, signalTimestamp(sort: Desc)])
+  @@map("alpha_market_signals")
+}
+
+model AlphaRecommendationRun {
+  id                       String   @id @default(cuid())
+  userId                   String   @map("user_id")
+  user                     User     @relation(fields: [userId], references: [id])
+  triggeredAt              DateTime @map("triggered_at")
+  triggerType              String   @default("manual") @map("trigger_type")
+  symbolsEvaluated         Int      @default(0) @map("symbols_evaluated")
+  recommendationsGenerated Int      @default(0) @map("recommendations_generated")
+  durationMs               Int      @default(0) @map("duration_ms")
+  scoringConfigSnapshot    Json     @default("{}") @map("scoring_config_snapshot")
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  items AlphaRecommendationItem[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("alpha_recommendation_runs")
+}
+
+model AlphaRecommendationItem {
+  id                   String   @id @default(cuid())
+  runId                String   @map("run_id")
+  run                  AlphaRecommendationRun @relation(fields: [runId], references: [id])
+  userId               String   @map("user_id")
+  symbol               String
+  actionType           String   @map("action_type") // "buy" | "sell" | "watch"
+  tradeFitScore        Float    @map("trade_fit_score")
+  marketConvictionScore Float   @map("market_conviction_score")
+  personalEdgeScore    Float    @map("personal_edge_score")
+  riskPenaltyScore     Float    @map("risk_penalty_score")
+  finalScore           Float    @map("final_score")
+  rationaleSummary     String   @map("rationale_summary")
+  status               String   @default("generated")
+  outcomeStatus        String   @default("pending") @map("outcome_status")
+  outcomeReturnPercent Float?   @map("outcome_return_percent")
+  sector               String?
+  marketCapBucket      String?  @map("market_cap_bucket")
+  suggestedStrategy    String   @map("suggested_strategy")
+  confidenceLevel      String   @default("medium") @map("confidence_level")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  factors AlphaFactorBreakdown[]
+
+  @@index([userId, status])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([runId])
+  @@index([symbol])
+  @@map("alpha_recommendation_items")
+}
+
+model AlphaFactorBreakdown {
+  id                   Int    @id @default(autoincrement())
+  recommendationItemId String @map("recommendation_item_id")
+  item                 AlphaRecommendationItem @relation(fields: [recommendationItemId], references: [id])
+  factorKey            String @map("factor_key")
+  factorLabel          String @map("factor_label")
+  factorCategory       String @map("factor_category") // "market_conviction" | "personal_edge" | "risk_penalty"
+  rawValue             Float  @map("raw_value")
+  normalizedValue      Float  @map("normalized_value")
+  weight               Float
+  contributionScore    Float  @map("contribution_score")
+  explanation          String
+
+  @@index([recommendationItemId])
+  @@map("alpha_factor_breakdowns")
+}
+
+model AlphaPatternStats {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
+  groupType       String   @map("group_type")
+  groupValue      String   @map("group_value")
+  winRate         Float    @default(0) @map("win_rate")
+  avgReturn       Float    @default(0) @map("avg_return")
+  medianReturn    Float    @default(0) @map("median_return")
+  maxDrawdown     Float    @default(0) @map("max_drawdown")
+  bestReturn      Float    @default(0) @map("best_return")
+  sampleSize      Int      @default(0) @map("sample_size")
+  avgHoldDays     Float    @default(0) @map("avg_hold_days")
+  totalPnl        Float    @default(0) @map("total_pnl")
+  profitFactor    Float    @default(0) @map("profit_factor")
+  recentTrend     String   @default("stable") @map("recent_trend")
+  confidenceScore Float    @default(0) @map("confidence_score")
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+
+  @@unique([userId, groupType, groupValue])
+  @@index([userId])
+  @@map("alpha_pattern_stats")
+}
+
+model AlphaEdgeSnapshot {
+  id                       String   @id @default(cuid())
+  userId                   String   @map("user_id")
+  user                     User     @relation(fields: [userId], references: [id])
+  snapshotDate             DateTime @map("snapshot_date")
+  overallWinRate           Float    @default(0) @map("overall_win_rate")
+  overallAvgReturn         Float    @default(0) @map("overall_avg_return")
+  totalTrades              Int      @default(0) @map("total_trades")
+  totalClosedTrades        Int      @default(0) @map("total_closed_trades")
+  bestSetups               Json     @default("[]") @map("best_setups")
+  worstSetups              Json     @default("[]") @map("worst_setups")
+  recommendationHitRate    Float    @default(0) @map("recommendation_hit_rate")
+  recommendationsAccepted  Int      @default(0) @map("recommendations_accepted")
+  recommendationsGenerated Int      @default(0) @map("recommendations_generated")
+  behavioralInsights       Json     @default("[]") @map("behavioral_insights")
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  @@index([userId, snapshotDate(sort: Desc)])
+  @@map("alpha_edge_snapshots")
+}
+
+model AlphaWeeklyReport {
+  id                    String   @id @default(cuid())
+  userId                String   @map("user_id")
+  user                  User     @relation(fields: [userId], references: [id])
+  weekStartDate         DateTime @map("week_start_date") @db.Date
+  weekEndDate           DateTime @map("week_end_date") @db.Date
+  tradesOpened          Int      @default(0) @map("trades_opened")
+  tradesClosed          Int      @default(0) @map("trades_closed")
+  weekPnl               Float    @default(0) @map("week_pnl")
+  weekPnlPercent        Float    @default(0) @map("week_pnl_percent")
+  winRate               Float    @default(0) @map("win_rate")
+  whatWorked             Json     @default("[]") @map("what_worked")
+  whatFailed             Json     @default("[]") @map("what_failed")
+  missedPatterns         Json     @default("[]") @map("missed_patterns")
+  recommendationHitRate Float    @default(0) @map("recommendation_hit_rate")
+  suggestedAdjustments  String[] @default([]) @map("suggested_adjustments")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, weekStartDate])
+  @@index([userId, weekStartDate(sort: Desc)])
+  @@map("alpha_weekly_reports")
 }
